@@ -1,14 +1,15 @@
+import React from "react";
 import Image from "next/image";
 
-import Searchbar from "./searchbar";
-import Filter from "./filter";
+import Searchbar from "@/components/banner/searchbar";
+import Filter from "@/components/banner/filter";
 import { BannerMask } from "@/assets/images";
 
 type BannerProps = {
   title: string;
 };
 
-export default function Banner({ title }: BannerProps): JSX.Element {
+export default function Banner({ title }: BannerProps): React.ReactElement {
   return (
     <div className="relative h-fit w-full bg-primary p-6">
       <span className="relative z-10 flex flex-col space-y-4">

@@ -1,9 +1,13 @@
 import React, { createContext, useState } from "react";
-import { FiltersType } from "@/constants/allFilters";
+import { z } from "zod";
+
+import * as TFilters from "@/types/filters";
+
+type FiltersType = TFilters.AllFiltersType;
 
 type TFilterContext = {
   filters: FiltersType;
-  setFilters: React.Dispatch<React.SetStateAction<FiltersType>>;
+  setFilters: (value: FiltersType) => void;
   enabled: string[];
   setEnabled: React.Dispatch<React.SetStateAction<string[]>>;
 };
@@ -16,8 +20,17 @@ export const FilterContext = createContext<TFilterContext>({
 });
 
 export const FilterProvider = ({ children }: { children: React.ReactNode }) => {
-  const [filters, setFilters] = useState<FiltersType>({});
+  const [filters, _setFilters] = useState<FiltersType>({});
   const [enabled, setEnabled] = useState<string[]>([]);
+
+  const setFilters = (value: FiltersType) => {
+    try {
+      TFilters.schemas.allFilters.parse(value);
+      _setFilters(value);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <FilterContext.Provider

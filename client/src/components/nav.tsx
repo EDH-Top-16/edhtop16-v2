@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -8,10 +9,10 @@ import NavLinks from "@/constants/navLinks";
 type NavItem = {
   href: string;
   label: string;
-  icon: JSX.Element;
+  icon: React.ReactElement;
 };
 
-export default function Navigation(): JSX.Element {
+export default function Navigation(): React.ReactElement {
   return (
     <nav className="fixed left-[-400px] flex h-screen w-nav flex-col items-center space-y-16 bg-purple-400 md:relative md:left-0">
       <Link className="mt-24" href="/">

@@ -4,11 +4,7 @@ import { useEffect, useContext, useState } from "react";
 import { getCommanders } from "@/api/commander";
 
 import { enabledFilters, defaultFilters } from "@/constants/filters";
-import {
-  CommanderType,
-  CommandersType,
-  schemas,
-} from "@/utils/types/commanders";
+import { CommanderType, CommandersType, schemas } from "@/types/commanders";
 import { FilterContext } from "@/context/filter";
 
 export default function CommandersPage(): {} {

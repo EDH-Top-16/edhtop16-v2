@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 export default function Error({
   code,
@@ -6,7 +7,7 @@ export default function Error({
 }: {
   code: number;
   msg: string;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <div>
       <h1>Error {code}</h1>

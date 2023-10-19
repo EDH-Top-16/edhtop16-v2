@@ -1,10 +1,12 @@
+import React from "react";
+
 type SearchbarProps = {
   placeholder: string;
 };
 
 export default function Searchbar({
   placeholder,
-}: SearchbarProps): JSX.Element {
+}: SearchbarProps): React.ReactElement {
   return (
     <>
       <label htmlFor="searchbar" className="hidden"></label>

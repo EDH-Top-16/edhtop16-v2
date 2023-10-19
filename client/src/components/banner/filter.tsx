@@ -1,11 +1,12 @@
+import React from "react";
 import { useState, useContext, useRef } from "react";
 import { AiOutlineDown } from "react-icons/ai";
 
 import { FilterContext } from "@/context/filter";
-import { componentMap } from "./filters";
+import { componentMap } from "../filters";
 import { useClickOutside } from "@/utils/useClickOutside";
 
-export default function Filter(): JSX.Element {
+export default function Filter(): React.ReactElement {
   const [openFilters, setOpenFilters] = useState(false);
 
   return (

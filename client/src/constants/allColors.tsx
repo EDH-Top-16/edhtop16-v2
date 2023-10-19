@@ -1,3 +1,5 @@
+import React from "react";
+
 import {
   WhiteIcon,
   BlueIcon,
@@ -8,16 +10,16 @@ import {
 } from "@/assets/icons";
 
 type Color = {
-  [key: string]: JSX.Element;
+  [key: string]: React.ReactElement;
 };
 
 const allColors: Color = {
-  white: <WhiteIcon />,
-  blue: <BlueIcon />,
-  black: <BlackIcon />,
-  red: <RedIcon />,
-  green: <GreenIcon />,
-  colorless: <ColorlessIcon />,
+  W: <WhiteIcon />,
+  U: <BlueIcon />,
+  B: <BlackIcon />,
+  R: <RedIcon />,
+  G: <GreenIcon />,
+  C: <ColorlessIcon />,
 };
 
 export default allColors;

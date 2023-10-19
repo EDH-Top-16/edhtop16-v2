@@ -1,5 +1,5 @@
-import Colors from "./colors";
-import Standing from "./standing";
+import Colors from "@/components/filters/colors";
+import Standing from "@/components/filters/standing";
 
 type TComponentMap = {
   [key: string]: React.FC;

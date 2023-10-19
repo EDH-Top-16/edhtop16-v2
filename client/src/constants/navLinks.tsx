@@ -1,10 +1,12 @@
+import React from "react";
+
 import { AboutIcon, BracketIcon, DeckIcon } from "@/assets/icons";
 
 // navlink typing
 type NavLink = {
   href: string;
   label: string;
-  icon: JSX.Element;
+  icon: React.ReactElement;
 };
 
 const NavLinks: NavLink[] = [

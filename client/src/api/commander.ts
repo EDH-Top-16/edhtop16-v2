@@ -1,14 +1,14 @@
 import { AxiosResponse } from "axios";
-import { redirect } from "next/navigation";
 
-import api from "./api";
-import * as TFilters from "@/utils/types/filters";
-import * as TCommanders from "@/utils/types/commanders";
+import api from "@/api/api";
+import * as TFilters from "@/types/filters";
+import * as TCommanders from "@/types/commanders";
 
 export async function getCommanders(filters: TFilters.AllFiltersType) {
   // Validate the filters using schema
+  console.log(filters);
   const v = TFilters.schemas.allFilters.safeParse(filters);
-  if (!v.success) throw new Error("Invalid filters");
+  if (!v.success) throw "Invalid filters";
 
   let res: AxiosResponse<TCommanders.CommandersType>;
   try {

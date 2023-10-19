@@ -1,20 +1,20 @@
 import { z } from "zod";
 
 const OperatorType = z.object({
-  lte: z.number().optional(),
-  lt: z.number().optional(),
-  eq: z.number().optional(),
-  gte: z.number().optional(),
-  gt: z.number().optional(),
-  ne: z.number().optional(),
-  in_: z.array(z.number()).optional(),
-  nin: z.array(z.number()).optional(),
-  regex: z.string().optional(),
-  exists: z.boolean().optional(),
-  mod: z.array(z.number()).optional(),
-  all_: z.array(z.number()).optional(),
-  elemMatch: z.object({}).optional(),
-  size: z.number().optional(),
+  $lte: z.number().optional(),
+  $lt: z.number().optional(),
+  $eq: z.number().optional(),
+  $gte: z.number().optional(),
+  $gt: z.number().optional(),
+  $ne: z.number().optional(),
+  $in_: z.array(z.number()).optional(),
+  $nin: z.array(z.number()).optional(),
+  $regex: z.string().optional(),
+  $exists: z.boolean().optional(),
+  $mod: z.array(z.number()).optional(),
+  $all_: z.array(z.number()).optional(),
+  $elemMatch: z.object({}).optional(),
+  $size: z.number().optional(),
 });
 
 const BaseFilters = z.object({
