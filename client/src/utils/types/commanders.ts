@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const Commander = z.object({
   colorID: z.string().optional(),
+  conversionRate: z.number().optional(),
   wins: z.number().optional(),
   winsSwiss: z.number().optional(),
   winsBracket: z.number().optional(),
@@ -13,11 +14,10 @@ const Commander = z.object({
   winRate: z.number().optional(),
   winRateSwiss: z.number().optional(),
   winRateBracket: z.number().optional(),
+  topCuts: z.number().optional(),
 });
 
-const Commanders = z.object({
-  commanders: z.record(Commander),
-});
+const Commanders = z.record(Commander);
 
 const schemas = {
   commander: Commander,

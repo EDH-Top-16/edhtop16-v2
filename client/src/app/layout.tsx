@@ -1,5 +1,6 @@
 import "./globals.css";
 import ContextProvider from "@/context/context";
+import { ReduxProvider } from "@/store/provider";
 
 /**
  * This file is the root layout for the entire application.
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex h-screen w-screen bg-secondary">
-        <ContextProvider>{children}</ContextProvider>
+        <ReduxProvider>
+          <ContextProvider>{children}</ContextProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

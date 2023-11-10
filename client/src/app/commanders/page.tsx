@@ -1,21 +1,15 @@
 "use client";
 import _ from "lodash";
-import { useEffect, useContext, useState } from "react";
-import { getCommanders } from "@/api/commander";
+import { useEffect, useContext } from "react";
 
 import { enabledFilters, defaultFilters } from "@/constants/filters";
-import {
-  CommanderType,
-  CommandersType,
-  schemas,
-} from "@/utils/types/commanders";
 import { FilterContext } from "@/context/filter";
+import { useGetCommandersQuery } from "@/store/services/edhtop16";
+import { useDebounce } from "@/utils/useDebounce";
 
 export default function CommandersPage(): {} {
   // Get the filters from the context
   const { filters, setFilters, setEnabled } = useContext(FilterContext);
-
-  const [commanders, setCommanders] = useState<CommandersType>();
 
   // Set the default filters for the commanders view
   useEffect(() => {
@@ -23,16 +17,9 @@ export default function CommandersPage(): {} {
     setFilters(defaultFilters.commanders);
   }, []);
 
-  // Fetch the commanders
-  useEffect(() => {
-    if (_.isEmpty(filters)) return; // If filters is empty, don't fetch
+  const debouncedFilters = useDebounce(filters);
 
-    (async () => {
-      const { data }: { data: CommandersType } = await getCommanders(filters);
-      if (data) setCommanders(data);
-      else setCommanders(undefined);
-    })();
-  }, [filters]);
+  const { data: commanders, isFetching, isLoading} = useGetCommandersQuery(defaultFilters.commanders);
 
   return (
     <table className="w-full">
@@ -50,13 +37,13 @@ export default function CommandersPage(): {} {
         {/* Commanders is an object with key being commander name */}
         {commanders &&
           Object.keys(commanders).map((name: string, i: number) => (
-            <tr key={i}>
+            <tr key={name}>
               <td>{i + 1}</td>
               <td>{name}</td>
               <td>{commanders[name]?.topCuts}</td>
               <td>{commanders[name]?.count}</td>
-              <td>{commanders[name]?.conversion}</td>
-              <td>{commanders[name]?.colors}</td>
+              <td>{Number((commanders[name]?.conversionRate || 0) * 100).toPrecision(3)}</td>
+              <td>{commanders[name]?.colorID}</td>
             </tr>
           ))}
       </tbody>
