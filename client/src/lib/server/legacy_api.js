@@ -5,6 +5,9 @@
  * but it may be deprecated in the future.
  */
 
+const isNonEmptyObject = (obj) => !!obj && !Array.isArray(obj) && typeof obj === 'object' && Object.keys(obj).length !== 0;
+
+
 const dbo = (() => {
   return {
     getDb: function () {
@@ -48,10 +51,33 @@ async function parseTourneyFilters(filters) {
     }
     let dateValue = dateName === "date" ? filters.date : filters.dateCreated;
 
+    // Get time six months ago; dateValue cannot be less than that.
+    const today = new Date();
+    const sixMonthsAgo = new Date();
+
+    if(isNonEmptyObject(dateValue)){
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      
+      let dateValueGt = dateValue.$gt ? dateValue.$gt : (dateValue.$gte ? dateValue.$gte : 0);
+      let dateValueLt = dateValue.$lt ? dateValue.$lt : (dateValue.$lte ? dateValue.$lte : today);
+
+      if((!!dateValueGt || dateValueGt === 0) && typeof dateValueGt === 'number') dateValueGt *= 1000 // JS dates are coerced to ms; if we have a unix timestamp use ms
+      if((!!dateValueLt || dateValueLt === 0) && typeof dateValueLt === 'number') dateValueLt *= 1000
+
+
+      if(Math.abs(dateValueLt - dateValueGt) > (1000 * 60 * 60 * 24 * 183)) {
+        throw new Error(
+          "Error: date range must be within 183 days (~6 months)"
+        )
+      }
+    } else {
+      dateValue = {$gt: sixMonthsAgo}
+    }
+
     // Form query and add date and size filter.
     query = {
       // If date, size, not included, set filter to more than 0 (get everything)
-      [dateName]: dateValue !== undefined ? dateValue : { $gt: 0 },
+      [dateName]: dateValue,
       size: Object.keys(filters).includes("size") ? filters.size : { $gt: 0 },
     };
 

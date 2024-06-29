@@ -3,12 +3,6 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
 import { startServerAndCreateNextHandler } from "@as-integrations/next";
 import { createContext, schema } from "../../lib/server/schema";
 
-export const config = {
-  api: {
-    responseLimit: false,
-  },
-}
-
 const server = new ApolloServer({
   schema,
   introspection: true,
