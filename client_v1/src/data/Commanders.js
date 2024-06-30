@@ -13,14 +13,45 @@ export async function getCommanders(filters, showUnknown = false) {
     },
   };
   // console.log("asdf", filters);
-  const res = await axios.post(
-    process.env.REACT_APP_uri + "/api/req",
-    filters,
-    config
-  );
-  return res.data.filter(
-    (el) => "commander" in el && (showUnknown || el.commander !== "Unknown Commander")
-  );
+  if(filters.dateCreated && "$gte" in dateCreated){
+      let result = {};
+      let now = Math.floor(new Date().getTime() / 1000);
+      while(now > filters.$gte) {
+        filters.$lte = filters.$gte + (1000 * 60 * 60 * 24 * 180);
+        if(filters.$lte > now) filters.$lte = now;
+        const res = await axios.post(
+          process.env.REACT_APP_uri + "/api/req",
+          filters,
+          config
+        );
+        result = {...result, ...res.data.filter((el) => "commander" in el && (showUnknown || el.commander !== "Unknown Commander"))}
+        filters.$gte = filters.$lte;
+      }
+      return result;
+  } else if (filters.dateCreated && "$lte" in dateCreated){
+    let result = {};
+    while(filters.$lte > 0){
+      filters.$gte = filters.$lte - (1000 * 60 * 60 * 24 * 180);
+      if(filters.$gte < 0) filters.$gte = 0;
+      const res = await axios.post(
+        process.env.REACT_APP_uri + "/api/req",
+        filters,
+        config
+      );
+      result = {...result, ...res.data.filter((el) => "commander" in el && (showUnknown || el.commander !== "Unknown Commander"))}
+      filters.$lte = filters.$gte;
+    }
+    return result;
+  } else {
+    const res = await axios.post(
+      process.env.REACT_APP_uri + "/api/req",
+      filters,
+      config
+    );
+    return res.data.filter(
+      (el) => "commander" in el && (showUnknown || el.commander !== "Unknown Commander")
+    );
+  }
 }
 
 export async function getTournaments(filters){
