@@ -13,6 +13,15 @@ const nextConfig = {
     ];
   },
   compiler: { relay: require("./relay.config") },
+  webpack: (config, { isServer, webpack }) => {
+    if (!isServer) {
+      config.plugins.push(
+        new webpack.IgnorePlugin({ resourceRegExp: /lib\/server/ }),
+      );
+    }
+
+    return config;
+  },
 };
 
 module.exports = nextConfig;
