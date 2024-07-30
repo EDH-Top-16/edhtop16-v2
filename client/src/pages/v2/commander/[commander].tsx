@@ -132,7 +132,7 @@ function CommandersPageShell({ children }: PropsWithChildren<{}>) {
                   shortLabel: "≥",
                   currentValue:
                     queryParams.minSize == null && queryParams.maxSize == null
-                      ? "64"
+                      ? "60"
                       : queryParams.minSize,
                 },
                 {
@@ -239,7 +239,7 @@ export default withRelay(CommanderPage, CommanderQuery, {
   //   });
 
   //   if (filters.minSize == null && filters.maxSize == null) {
-  //     filters = { ...filters, minSize: 64 };
+  //     filters = { ...filters, minSize: 60 };
   //   }
 
   //   if (filters.minDate == null && filters.maxDate == null) {
