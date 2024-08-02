@@ -137,6 +137,6 @@ async def get_entries(filters: AllFilters) -> List[Entry]:
             i["topCut"] = tournament.topCut or 0
             i["tournamentSize"] = tournament.size or 0
 
-        res.extend([Entry(**e) for e in result])
+        res.extend([Entry(**e, id=str(e["_id"])) for e in result])
 
     return res

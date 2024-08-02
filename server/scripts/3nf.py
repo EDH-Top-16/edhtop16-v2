@@ -124,6 +124,7 @@ if __name__ == "__main__":
                             "$set": {
                                 "playerID": player_id,
                                 "commanderID": commander_id,
+                                "TID": tournament["TID"],
                                 "standing": entry["standing"],
                                 "decklist": entry["decklist"],
                                 "winsSwiss": entry["winsSwiss"] or 0,
