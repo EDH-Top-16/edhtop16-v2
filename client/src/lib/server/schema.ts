@@ -250,22 +250,68 @@ const PlayerType = builder.prismaObject("Player", {
   }),
 });
 
+const EntryFilters = builder.inputType("EntryFilters", {
+  fields: (t) => ({
+    minSize: t.int(),
+    maxSize: t.int(),
+    minDate: t.string(),
+    maxDate: t.string(),
+    minStanding: t.int(),
+    maxStanding: t.int(),
+    minWins: t.int(),
+    maxWins: t.int(),
+    minLosses: t.int(),
+    maxLosses: t.int(),
+    minDraws: t.int(),
+    maxDraws: t.int(),
+  }),
+});
+
 builder.prismaObject("Commander", {
   fields: (t) => ({
     id: t.exposeID("uuid"),
     name: t.exposeString("name"),
     colorId: t.exposeString("colorId"),
-    entries: t.relation("entries", {
-      query: {
-        orderBy: { standing: "asc" },
+    entries: t.field({
+      type: t.listRef(EntryType),
+      args: {
+        filters: t.arg({ type: EntryFilters }),
+      },
+      resolve: async (parent, { filters }) => {
+        const minDate = new Date(filters?.minDate ?? 0);
+        const maxDate = filters?.maxDate
+          ? new Date(filters.maxDate)
+          : new Date();
+
+        return prisma.$queryRaw<Entry[]>`
+          select
+            e.*,
+            e."winsSwiss" + e."winsBracket" as "totalWins",
+            e."lossesSwiss" + e."lossesBracket" as "totalLosses",
+            "totalWins" / ("totalWins" + "totalLosses" + "e.draws") as "winRate"
+          from "Entry" as e
+          left join "Tournament" t on t.uuid = e."tournamentUuid"
+          where e."commanderUuid" = ${parent.uuid}::uuid
+          and e.standing >= ${filters?.minStanding ?? 0}
+          and e.standing <= ${filters?.maxStanding ?? Number.MAX_SAFE_INTEGER}
+          and t.size >= ${filters?.minSize ?? 0}
+          and t.size <= ${filters?.maxSize ?? Number.MAX_SAFE_INTEGER}
+          -- and "totalWins" >= ${filters?.minWins ?? 0}
+          -- and "totalWins" <= ${filters?.maxWins ?? Number.MAX_SAFE_INTEGER}
+          -- and "totalLosses" >= ${filters?.minLosses ?? 0}
+          -- and "totalLosses" <= ${
+            filters?.maxLosses ?? Number.MAX_SAFE_INTEGER
+          }
+          and e."draws" >= ${filters?.minDraws ?? 0}
+          and e."draws" <= ${filters?.maxDraws ?? Number.MAX_SAFE_INTEGER}
+          and t."tournamentDate" >= ${minDate}
+          and t."tournamentDate" <= ${maxDate}
+          order by e.standing asc -- , "winRate" desc
+        `;
       },
     }),
     breakdownUrl: t.string({
-      resolve: (parent) =>
-        new URL(
-          `/commander/${encodeURIComponent(parent.name)}`,
-          "https://edhtop16.com",
-        ).href,
+      resolve: (parent) => `/v2/commander/${encodeURIComponent(parent.name)}`,
     }),
     count: t.int({
       args: { filters: t.arg({ type: FiltersInput }) },
@@ -510,12 +556,12 @@ builder.queryType({
         sortDir: t.arg({ type: SortDirection, defaultValue: "DESC" }),
       },
       resolve: async (query, _root, args, ctx) => {
-        const minSize = args.filters?.minSize ?? 0;
         const topCut = args.filters?.topCut ?? 0;
         const minEntries = args.filters?.minEntries ?? 0;
-        const minDate = new Date(args.filters?.minDate ?? 0);
-        const maxSize = args.filters?.maxSize ?? Number.MAX_SAFE_INTEGER;
         const maxEntries = args.filters?.maxEntries ?? Number.MAX_SAFE_INTEGER;
+        const minSize = args.filters?.minSize ?? 0;
+        const maxSize = args.filters?.maxSize ?? Number.MAX_SAFE_INTEGER;
+        const minDate = new Date(args.filters?.minDate ?? 0);
         const maxDate = args.filters?.maxDate
           ? new Date(args.filters.maxDate)
           : new Date();

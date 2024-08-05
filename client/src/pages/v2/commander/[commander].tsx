@@ -1,83 +1,70 @@
-import {
-  QueryParamKind,
-  parseQuery,
-  useQueryParams,
-} from "@reverecre/next-query-params";
+import { QueryParamKind, useQueryParams } from "@reverecre/next-query-params";
 import Head from "next/head";
 import { PropsWithChildren, useMemo } from "react";
 import { graphql, useFragment, usePreloadedQuery } from "react-relay/hooks";
 import { RelayProps, withRelay } from "relay-nextjs";
-import { Banner } from "../../components/banner/banner";
-import { Navigation } from "../../components/nav";
-import { Table, TableColumnConfig } from "../../components/table";
-import { getClientEnvironment } from "../../lib/client/relay_client_environment";
+import { Banner } from "../../../components/banner/banner";
+import { Navigation } from "../../../components/nav";
+import { Table, TableColumnConfig } from "../../../components/table";
+import { getClientEnvironment } from "../../../lib/client/relay_client_environment";
+import { Commander_CommanderQuery } from "../../../queries/__generated__/Commander_CommanderQuery.graphql";
+import { Commander_EntryTableData$key } from "../../../queries/__generated__/Commander_EntryTableData.graphql";
 import {
   CommanderSortBy,
   SortDirection,
-  commanders_CommandersQuery,
-} from "../../queries/__generated__/commanders_CommandersQuery.graphql";
-import { commanders_CommandersTableData$key } from "../../queries/__generated__/commanders_CommandersTableData.graphql";
+} from "../../../queries/__generated__/commanders_CommandersQuery.graphql";
 
 const COMMANDERS_TABLE_COLUMN_CONFIG: TableColumnConfig[] = [
   {
     id: "name",
-    displayName: "Commander",
+    displayName: "Player Name",
     sortVariable: "NAME",
   },
-  {
-    id: "count",
-    displayName: "Top 16s",
-    sortVariable: "TOP_CUTS",
-  },
-  {
-    id: "entries",
-    displayName: "Entries",
-    sortVariable: "ENTRIES",
-  },
-
-  {
-    id: "conversion",
-    displayName: "Conversion",
-    sortVariable: "CONVERSION",
-    showOnMobile: false,
-  },
-  {
-    id: "colors",
-    displayName: "Colors",
-  },
+  { id: "standing", displayName: "Standing" },
+  { id: "wins", displayName: "Wins" },
+  { id: "losses", displayName: "Losses" },
+  { id: "winRate", displayName: "Win Rate" },
+  { id: "tournament", displayName: "Tournament" },
 ];
 
-function CommandersTable(props: {
-  commanders: commanders_CommandersTableData$key;
-}) {
-  const commanders = useFragment(
+function EntriesTable(props: { entries: Commander_EntryTableData$key }) {
+  const entries = useFragment(
     graphql`
-      fragment commanders_CommandersTableData on Commander
-      @relay(plural: true) {
-        name
-        breakdownUrl
-        colorId
-        conversionRate(filters: $filters)
-        count(filters: $filters)
-        topCuts(filters: $filters)
+      fragment Commander_EntryTableData on Entry @relay(plural: true) {
+        player {
+          name
+        }
+
+        tournament {
+          name
+        }
+
+        id
+        decklist
+        standing
+        wins
+        losses
+        draws
       }
     `,
-    props.commanders,
+    props.entries,
   );
 
   return (
     <Table
+      // layout="WLD"
       columns={COMMANDERS_TABLE_COLUMN_CONFIG}
-      data={commanders.map((c) => {
+      data={entries.map((e) => {
         return {
-          id: c.name,
-          name: c.name,
-          href: c.breakdownUrl,
-          colorIdentity: c.colorId,
+          id: e.id,
+          name: e.player?.name ?? "Unknown Player",
+          href: e.decklist ?? undefined,
           metadata: {
-            count: c.topCuts,
-            entries: c.count,
-            conversion: `${Math.round(c.conversionRate * 10000) / 100}%`,
+            standing: e.standing,
+            wins: e.wins,
+            losses: e.losses,
+            winRate: 0,
+            tournament: e.tournament.name,
           },
         };
       })}
@@ -192,22 +179,25 @@ function CommandersPageShell({ children }: PropsWithChildren<{}>) {
   );
 }
 
-const CommandersQuery = graphql`
-  query commanders_CommandersQuery(
-    $filters: Filters
-    $sortBy: CommanderSortBy
-    $sortDir: SortDirection
+const CommanderQuery = graphql`
+  query Commander_CommanderQuery(
+    # $filters: Filters
+    # $sortBy: CommanderSortBy
+    # $sortDir: SortDirection
+    $commander: String!
   ) {
-    commanders(filters: $filters, sortBy: $sortBy, sortDir: $sortDir) {
-      ...commanders_CommandersTableData
+    commander(name: $commander) {
+      entries {
+        ...Commander_EntryTableData
+      }
     }
   }
 `;
 
-function CommandersPage({
+function CommanderPage({
   preloadedQuery,
-}: RelayProps<{}, commanders_CommandersQuery>) {
-  const { commanders } = usePreloadedQuery(CommandersQuery, preloadedQuery);
+}: RelayProps<{}, Commander_CommanderQuery>) {
+  const { commander } = usePreloadedQuery(CommanderQuery, preloadedQuery);
 
   return (
     <>
@@ -215,13 +205,13 @@ function CommandersPage({
         <title>EDH Top16</title>
       </Head>
       <CommandersPageShell>
-        <CommandersTable commanders={commanders} />
+        <EntriesTable entries={commander.entries} />
       </CommandersPageShell>
     </>
   );
 }
 
-export default withRelay(CommandersPage, CommandersQuery, {
+export default withRelay(CommanderPage, CommanderQuery, {
   fallback: (
     <CommandersPageShell>
       <Table columns={COMMANDERS_TABLE_COLUMN_CONFIG} />
@@ -230,43 +220,43 @@ export default withRelay(CommandersPage, CommandersQuery, {
   createClientEnvironment: () => getClientEnvironment()!,
   createServerEnvironment: async (ctx) => {
     const { createServerEnvironment } = await import(
-      "../../lib/server/relay_server_environment"
+      "../../../lib/server/relay_server_environment"
     );
 
     return createServerEnvironment();
   },
-  variablesFromContext: (ctx) => {
-    let { sortBy, sortDir, ...filters } = parseQuery(ctx.query, {
-      sortBy: QueryParamKind.STRING,
-      sortDir: QueryParamKind.STRING,
-      minSize: QueryParamKind.NUMBER,
-      minEntries: QueryParamKind.NUMBER,
-      minDate: QueryParamKind.STRING,
-      maxSize: QueryParamKind.NUMBER,
-      maxEntries: QueryParamKind.NUMBER,
-      maxDate: QueryParamKind.STRING,
-      colorId: QueryParamKind.STRING,
-    });
+  // variablesFromContext: (ctx) => {
+  //   let { sortBy, sortDir, ...filters } = parseQuery(ctx.query, {
+  //     sortBy: QueryParamKind.STRING,
+  //     sortDir: QueryParamKind.STRING,
+  //     minSize: QueryParamKind.NUMBER,
+  //     minEntries: QueryParamKind.NUMBER,
+  //     minDate: QueryParamKind.STRING,
+  //     maxSize: QueryParamKind.NUMBER,
+  //     maxEntries: QueryParamKind.NUMBER,
+  //     maxDate: QueryParamKind.STRING,
+  //     colorId: QueryParamKind.STRING,
+  //   });
 
-    if (filters.minSize == null && filters.maxSize == null) {
-      filters = { ...filters, minSize: 60 };
-    }
+  //   if (filters.minSize == null && filters.maxSize == null) {
+  //     filters = { ...filters, minSize: 60 };
+  //   }
 
-    if (filters.minDate == null && filters.maxDate == null) {
-      const now = new Date();
-      now.setUTCFullYear(now.getUTCFullYear() - 1);
-      filters = { ...filters, minDate: now.toISOString().split("T")[0] };
-    }
+  //   if (filters.minDate == null && filters.maxDate == null) {
+  //     const now = new Date();
+  //     now.setUTCFullYear(now.getUTCFullYear() - 1);
+  //     filters = { ...filters, minDate: now.toISOString().split("T")[0] };
+  //   }
 
-    if (
-      (sortBy != null && !isSortBy(sortBy)) ||
-      (sortDir != null && !isSortDir(sortDir))
-    ) {
-      return { filters };
-    }
+  //   if (
+  //     (sortBy != null && !isSortBy(sortBy)) ||
+  //     (sortDir != null && !isSortDir(sortDir))
+  //   ) {
+  //     return { filters };
+  //   }
 
-    return { sortBy, sortDir, filters };
-  },
+  //   return { sortBy, sortDir, filters };
+  // },
 });
 
 function isSortBy(s: string): s is CommanderSortBy {
